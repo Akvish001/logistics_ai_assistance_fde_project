@@ -152,7 +152,6 @@ GRANT INSERT ON FDE_VIEWS.AgentAuditLog TO USR_FDE_RO;
 ```
 
 ## Phase 5
-streamlit run src\ui.py
 
 ## Phase 6
 - Deployment
@@ -164,7 +163,6 @@ cd cold-chain-logistics-FDE-Project
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-streamlit run src/ui.py
 ```
 
 1. Add the Microsoft GPG repository key
@@ -182,28 +180,4 @@ sudo apt-get install -y unixodbc-dev
 
 5. Create the systemd service file
 ```
-sudo nano /etc/systemd/system/streamlit.service
-```
-
-6. Paste the configuration
-```
-[Unit]
-Description=Streamlit Cold-Chain Dispatch Console
-After=network.target
-
-[Service]
-User=ubuntu
-WorkingDirectory=/home/ubuntu/cold-chain-logistics-FDE-Project
-ExecStart=/home/ubuntu/cold-chain-logistics-FDE-Project/venv/bin/streamlit run src/ui.py --server.port=8501 --server.address=0.0.0.0
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-7. Register and start the service
-```
-sudo systemctl daemon-reload
-sudo systemctl enable streamlit
-sudo systemctl start streamlit
 ```

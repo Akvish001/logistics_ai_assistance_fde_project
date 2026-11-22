@@ -20,23 +20,19 @@ load_dotenv(dotenv_path=project_root / ".env")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
 
+from functools import lru_cache
+
+@lru_cache(maxsize=2)
 def get_cached_huggingface_embeddings(model_name: str):
     """
-    Loads and locks the HuggingFace model weights into the machine's global RAM.
-    If called again during any subsequent script rerun, it returns instantly.
+    Loads and caches HuggingFace embeddings using Python's built-in cache.
     """
-    import streamlit as st
-    
-    # We wrap the inner call with st.cache_resource dynamically 
-    @st.cache_resource(show_spinner=False)
-    def _load_model(name: str):
-        print(f"🧠 MEMORY SEED: Permanently caching local model [{name}] in global RAM...")
-        from langchain_huggingface import HuggingFaceEmbeddings
-        return HuggingFaceEmbeddings(
-            model_name=name,
-            model_kwargs={'device': 'cpu'}
-        )
-    return _load_model(model_name)
+    print(f"Loading local embedding model: {model_name}")
+    from langchain_huggingface import HuggingFaceEmbeddings
+    return HuggingFaceEmbeddings(
+        model_name=model_name,
+        model_kwargs={"device": "cpu"}
+    )
 
 EMBEDDINGS_MODEL_SETTING = os.getenv("Embeddings_model", "LOCAL").strip().upper()
 
@@ -57,16 +53,7 @@ else :
     
     print(f"🤗 Mode: Connecting to Local Fallback [{local_model_target}] Index (1024 Dim Space)...")
 
-    try:
-        import streamlit as st
-        if st.runtime.exists():
-            embeddings = get_cached_huggingface_embeddings(local_model_target)
-        else:
-            from langchain_huggingface import HuggingFaceEmbeddings
-            embeddings = HuggingFaceEmbeddings(model_name=local_model_target, model_kwargs={'device': 'cpu'})
-    except ImportError:
-        from langchain_huggingface import HuggingFaceEmbeddings
-        embeddings = HuggingFaceEmbeddings(model_name=local_model_target, model_kwargs={'device': 'cpu'})
+    embeddings = get_cached_huggingface_embeddings(local_model_target)
 
     INDEX_NAME = "fde-sop-index-local"
 
